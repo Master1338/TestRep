@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ] # Запускать при каждом пуше в ветку main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # ЭТАП 1: ТЕСТИРОВАНИЕ
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run test script
+        run: python test_app.py
+
+  # ЭТАП 2: РАЗВЕРТЫВАНИЕ (Запустится только если тесты прошли успешно)
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # Загружаем текущую папку на сервер
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
